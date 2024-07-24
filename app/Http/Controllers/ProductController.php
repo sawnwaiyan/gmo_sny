@@ -133,14 +133,13 @@ class ProductController extends Controller
         return view('products.edit', compact('product', 'publicFlg_codes'));
     }
 
-
-
     // public function update(Request $request, $id)
     // {
     //     $rules = [
     //         'product_name' => 'required|max:255',
     //         'price' => 'required|integer|min:0',
     //         'product_description' => 'nullable',
+    //         'product_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Image validation rule
     //         'manufacturer' => 'nullable|max:255',
     //         'jan_code' => 'nullable|max:20',
     //         'category' => 'nullable|max:50',
@@ -148,69 +147,6 @@ class ProductController extends Controller
     //         'remarks' => 'nullable',
     //         'store_id' => 'required|integer|min:0',
     //         'public_flg' => 'required|boolean',
-    //     ];
-
-    //     $messages = [
-    //         'jan_code.max' => 'JANコードは20桁以下の値を入力してください。'
-    //     ];
-
-    //     $validator = Validator::make($request->all(), $rules, $messages);
-
-    //     if ($validator->fails()) {
-    //         return response()->json([
-    //             'message' => '入力エラーが発生しました。',
-    //             'errors' => $validator->errors()->toArray()
-    //         ], 422);
-    //     }
-
-    //     $product = Product::findOrFail($id);
-    //     $validatedData = $validator->validated();
-
-    //     Log::info('Request has product_image: ' . $request->hasFile('product_image'));
-
-    //     if ($request->hasFile('product_image')) {
-    //         Log::info('Product image uploaded: ' . $request->file('product_image')->getClientOriginalName());
-
-    //         // Delete the old image if it exists
-    //         if ($product->product_image) {
-    //             Log::info('Deleting old image: ' . $product->product_image);
-    //             Storage::disk('public')->delete($product->product_image);
-    //         }
-
-    //         // Store the new image
-    //         $imagePath = $request->file('product_image')->store('product_images', 'public');
-    //         Log::info('New image path: ' . $imagePath);
-    //         $validatedData['product_image'] = $imagePath;
-    //     } else {
-    //         // Preserve the old image if no new image is uploaded
-    //         $validatedData['product_image'] = $product->product_image;
-    //     }
-
-    //     $validatedData['updated_by'] = auth()->user()->name ?? 'system';
-
-    //     try {
-    //         $product->update($validatedData);
-    //         return response()->json(['message' => '商品が正常に更新されました。'], 200);
-    //     } catch (\Exception $e) {
-    //         Log::error('Error updating product: ' . $e->getMessage());
-    //         return response()->json(['message' => 'サーバーエラーが発生しました。'], 500);
-    //     }
-    // }
-
-    // public function update(Request $request, $id)
-    // {
-    //     $rules = [
-    //         'product_name' => 'required|max:255',
-    //         'price' => 'required|integer|min:0',
-    //         'product_description' => 'nullable',
-    //         'manufacturer' => 'nullable|max:255',
-    //         'jan_code' => 'nullable|max:20',
-    //         'category' => 'nullable|max:50',
-    //         'tags' => 'nullable|max:50',
-    //         'remarks' => 'nullable',
-    //         'store_id' => 'required|integer|min:0',
-    //         'public_flg' => 'required|boolean',
-    //         // 'product_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Image validation rule
     //     ];
 
     //     $messages = [
@@ -226,32 +162,25 @@ class ProductController extends Controller
     //         ], 422);
     //     }
 
-    //     $product = Product::findOrFail($id);
     //     $validatedData = $validator->validated();
 
-    //     Log::info('Request has product_image: ' . $request->hasFile('product_image'));
+    //     $product = Product::findOrFail($id);
 
     //     if ($request->hasFile('product_image')) {
-    //         Log::info('Product image uploaded: ' . $request->file('product_image')->getClientOriginalName());
-
+    //         // Log::info('Product image uploaded: ' . $request->file('product_image')->getClientOriginalName());
     //         // Delete the old image if it exists
     //         if ($product->product_image) {
-    //             Log::info('Deleting old image: ' . $product->product_image);
     //             Storage::disk('public')->delete($product->product_image);
     //         }
 
     //         // Store the new image
     //         try {
     //             $imagePath = $request->file('product_image')->store('product_images', 'public');
-    //             Log::info('New image path: ' . $imagePath);
     //             $validatedData['product_image'] = $imagePath;
     //         } catch (\Exception $e) {
     //             Log::error('Error storing new image: ' . $e->getMessage());
     //             return response()->json(['message' => '画像の保存中にエラーが発生しました。'], 500);
     //         }
-    //     } else {
-    //         // Preserve the old image if no new image is uploaded
-    //         $validatedData['product_image'] = $product->product_image;
     //     }
 
     //     $validatedData['updated_by'] = auth()->user()->name ?? 'system';
@@ -271,7 +200,6 @@ class ProductController extends Controller
             'product_name' => 'required|max:255',
             'price' => 'required|integer|min:0',
             'product_description' => 'nullable',
-            'product_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Image validation rule
             'manufacturer' => 'nullable|max:255',
             'jan_code' => 'nullable|max:20',
             'category' => 'nullable|max:50',
@@ -280,6 +208,10 @@ class ProductController extends Controller
             'store_id' => 'required|integer|min:0',
             'public_flg' => 'required|boolean',
         ];
+
+        if ($request->hasFile('product_image')) {
+            $rules['product_image'] = 'image|mimes:jpeg,png,jpg,gif|max:2048';
+        }
 
         $messages = [
             'jan_code.max' => 'JANコードは20桁以下の値を入力してください。',
@@ -299,13 +231,10 @@ class ProductController extends Controller
         $product = Product::findOrFail($id);
 
         if ($request->hasFile('product_image')) {
-            // Log::info('Product image uploaded: ' . $request->file('product_image')->getClientOriginalName());
-            // Delete the old image if it exists
             if ($product->product_image) {
                 Storage::disk('public')->delete($product->product_image);
             }
 
-            // Store the new image
             try {
                 $imagePath = $request->file('product_image')->store('product_images', 'public');
                 $validatedData['product_image'] = $imagePath;

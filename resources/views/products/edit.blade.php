@@ -34,7 +34,7 @@
                     <div class="mt-1 flex items-center">
                         <span class="inline-block h-12 w-12 rounded-full overflow-hidden bg-gray-100">
                             <template x-if="imageFile.imageUrl || formData.product_image">
-                                <img :src="imageFile.imageUrl || '/storage/' + formData.product_image" alt="Selected" class="h-full w-full object-cover">
+                                <img :src="imageFile.imageUrl || '{{ asset('storage') }}/' + formData.product_image" alt="Selected" class="h-full w-full object-cover">
                             </template>
                             <template x-if="!imageFile.imageUrl && !formData.product_image">
                                 <svg class="h-full w-full text-gray-300" fill="currentColor" viewBox="0 0 24 24">
@@ -110,7 +110,7 @@
                 },
                 imageFile: {
                     fileName: '',
-                    imageUrl: product ? '/storage/' + product.product_image : null
+                    imageUrl: product ? '{{ asset('storage') }}/' + product.product_image : null
                 },
                 show: false,
                 errors: {},
@@ -136,6 +136,7 @@
                             // Clear the existing image URL when a new file is selected
                             this.formData.product_image = null;
                         } else {
+                            console.log('no file');
                             this.errors['product_image'] = messages_jp.msg.image_only;
                             this.resetFileInput();
                         }
@@ -148,10 +149,14 @@
                         
                         // Append all form data
                         for (let key in this.formData) {
+                            // Skip appending product_image if it's null and no new file is uploaded
+                            if (key === 'product_image' && !this.formData[key]) {
+                                continue;
+                            }
                             formData.append(key, this.formData[key]);
                         }
 
-                        // Append the file
+                        // Append the file if a new one is selected
                         if (this.$refs.fileInput.files.length > 0) {
                             formData.append('product_image', this.$refs.fileInput.files[0]);
                         }
@@ -186,7 +191,7 @@
                 resetFileInput() {
                     this.$refs.fileInput.value = '';
                     this.imageFile.fileName = '';
-                    this.imageFile.imageUrl = this.formData.product_image ? '/storage/' + this.formData.product_image : null;
+                    this.imageFile.imageUrl = this.formData.product_image ? '{{ asset('storage') }}/' + this.formData.product_image : null;
                 },
             }
         }
